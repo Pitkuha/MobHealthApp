@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "MobHealthApp",
+    "slug": "mob-health-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {},
+    "plugins": [
+      "expo-notifications"
+    ],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

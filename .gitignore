@@ -1,0 +1,8 @@
+node_modules
+desktop/node_modules
+desktop/dist
+server/node_modules
+.expo
+.env
+desktop/.env
+server/.env
