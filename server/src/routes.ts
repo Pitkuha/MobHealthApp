@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { aiRouter } from './modules/ai/routes';
 import { authRouter } from './modules/auth/routes';
 import { bootstrapRouter } from './modules/bootstrap/routes';
 import { chatRouter } from './modules/chat/routes';
@@ -14,6 +15,7 @@ apiRouter.get('/health', (_req, res) => {
 });
 
 apiRouter.use('/auth', authRouter);
+apiRouter.use('/ai', aiRouter);
 apiRouter.use('/bootstrap', bootstrapRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/weeks', weeksRouter);

@@ -1,4 +1,4 @@
-import { ChatMessage, Lesson, ReferralCode, User, WeekProgram } from '../types';
+import { AiMessage, AiSession, ChatMessage, Lesson, ReferralCode, User, WeekProgram } from '../types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
@@ -165,5 +165,33 @@ export const api = {
         status: string;
       }>;
     }>('/notifications/reminders', {}, token);
+  },
+
+  async aiChat(token: string, message: string, sessionId?: string) {
+    return request<{
+      session: AiSession;
+      answer: AiMessage;
+      messages: AiMessage[];
+    }>(
+      '/ai/chat',
+      {
+        method: 'POST',
+        body: JSON.stringify({ message, sessionId })
+      },
+      token
+    );
+  },
+
+  async aiSessions(token: string) {
+    return request<{
+      sessions: Array<AiSession & { lastMessage?: string }>;
+    }>('/ai/sessions', {}, token);
+  },
+
+  async aiSessionMessages(token: string, sessionId: string) {
+    return request<{
+      session: AiSession;
+      messages: AiMessage[];
+    }>(`/ai/sessions/${sessionId}/messages`, {}, token);
   }
 };

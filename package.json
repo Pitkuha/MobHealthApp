@@ -11,15 +11,22 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "server:dev": "cd server && npm run dev",
-    "server:typecheck": "cd server && npm run typecheck",
-    "server:test": "cd server && npm run test",
-    "desktop:install": "cd desktop && npm install",
-    "desktop:dev": "cd desktop && npm run dev",
-    "desktop:typecheck": "cd desktop && npm run typecheck",
-    "desktop:build": "cd desktop && npm run build"
+    "server:dev": "cd backend-java && /opt/homebrew/bin/mvn spring-boot:run",
+    "server:build": "cd backend-java && /opt/homebrew/bin/mvn -DskipTests package",
+    "server:test": "cd backend-java && /opt/homebrew/bin/mvn test",
+    "server:legacy:dev": "cd server && npm run dev",
+    "server:legacy:typecheck": "cd server && npm run typecheck",
+    "server:legacy:test": "cd server && npm run test",
+    "desktop:dev": "expo start --web --clear",
+    "desktop:build": "expo export --platform web",
+    "desktop:typecheck": "npm run typecheck",
+    "desktop:legacy:install": "cd desktop && npm install",
+    "desktop:legacy:dev": "cd desktop && npm run dev",
+    "desktop:legacy:typecheck": "cd desktop && npm run typecheck",
+    "desktop:legacy:build": "cd desktop && npm run build"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~4.0.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
@@ -29,10 +36,12 @@
     "expo-notifications": "~0.29.14",
     "expo-status-bar": "~2.0.0",
     "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-native": "0.76.9",
     "react-native-calendars": "^1.1313.0",
     "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "~4.4.0"
+    "react-native-screens": "~4.4.0",
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
     "@types/react": "~18.3.12",

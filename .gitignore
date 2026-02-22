@@ -2,6 +2,7 @@ node_modules
 desktop/node_modules
 desktop/dist
 server/node_modules
+backend-java/target
 .expo
 .env
 desktop/.env

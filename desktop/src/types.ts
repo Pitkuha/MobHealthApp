@@ -56,3 +56,20 @@ export interface Reminder {
   remindAt: string;
   status: string;
 }
+
+export type AiMessageRole = 'user' | 'assistant' | 'system';
+
+export interface AiMessage {
+  id: string;
+  role: AiMessageRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface AiSession {
+  id: string;
+  title?: string;
+  subagent: string;
+  createdAt: string;
+  updatedAt: string;
+}

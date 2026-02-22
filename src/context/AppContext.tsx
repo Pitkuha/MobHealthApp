@@ -2,7 +2,18 @@ import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo
 import { api } from '../api/client';
 import { clearToken, getToken, saveToken } from '../api/storage';
 import { scheduleLocalLessonReminder, registerForPushToken } from '../notifications/push';
-import { ChatMessage, DoctorPatientLink, Lesson, ReferralCode, Reminder, Role, User, WeekProgram } from '../types';
+import {
+  AiMessage,
+  AiSession,
+  ChatMessage,
+  DoctorPatientLink,
+  Lesson,
+  ReferralCode,
+  Reminder,
+  Role,
+  User,
+  WeekProgram
+} from '../types';
 
 interface ActionResult {
   ok: boolean;
@@ -17,6 +28,9 @@ interface AppContextValue {
   referralCodes: ReferralCode[];
   links: DoctorPatientLink[];
   reminders: Reminder[];
+  aiSessions: Array<AiSession & { lastMessage?: string }>;
+  aiMessages: AiMessage[];
+  aiActiveSessionId: string | null;
   isLoading: boolean;
   initError: string | null;
   login: (email: string, password: string) => Promise<ActionResult>;
@@ -45,6 +59,9 @@ interface AppContextValue {
     minutesBefore: number
   ) => Promise<ActionResult>;
   refreshReminders: () => Promise<void>;
+  askAi: (message: string) => Promise<ActionResult>;
+  openAiSession: (sessionId: string) => Promise<void>;
+  refreshAiSessions: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -58,6 +75,9 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [referralCodes, setReferralCodes] = useState<ReferralCode[]>([]);
   const [links, setLinks] = useState<DoctorPatientLink[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [aiSessions, setAiSessions] = useState<Array<AiSession & { lastMessage?: string }>>([]);
+  const [aiMessages, setAiMessages] = useState<AiMessage[]>([]);
+  const [aiActiveSessionId, setAiActiveSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
 
@@ -91,10 +111,34 @@ export function AppProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const loadAiSessions = async (token: string) => {
+    try {
+      const response = await api.aiSessions(token);
+      setAiSessions(response.sessions);
+
+      const shouldLoadFirst =
+        !aiActiveSessionId && response.sessions.length > 0 && response.sessions[0]?.id;
+
+      if (shouldLoadFirst) {
+        const firstId = response.sessions[0]?.id ?? null;
+        if (firstId) {
+          const history = await api.aiSessionMessages(token, firstId);
+          setAiActiveSessionId(firstId);
+          setAiMessages(history.messages);
+        }
+      }
+    } catch {
+      setAiSessions([]);
+      setAiMessages([]);
+      setAiActiveSessionId(null);
+    }
+  };
+
   const refreshBootstrap = async (token: string) => {
     const payload = await api.bootstrap(token);
     applyBootstrap(payload);
     await loadReminders(token);
+    await loadAiSessions(token);
   };
 
   const registerPushIfPossible = async (token: string) => {
@@ -193,6 +237,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     setLinks([]);
     setReferralCodes([]);
     setReminders([]);
+    setAiSessions([]);
+    setAiMessages([]);
+    setAiActiveSessionId(null);
   };
 
   const getDoctorForPatient = (patientId: string): User | undefined => {
@@ -347,6 +394,46 @@ export function AppProvider({ children }: PropsWithChildren) {
     await loadReminders(authToken);
   };
 
+  const refreshAiSessions = async () => {
+    if (!authToken) {
+      return;
+    }
+    await loadAiSessions(authToken);
+  };
+
+  const openAiSession = async (sessionId: string) => {
+    if (!authToken) {
+      return;
+    }
+    const response = await api.aiSessionMessages(authToken, sessionId);
+    setAiActiveSessionId(response.session.id);
+    setAiMessages(response.messages);
+  };
+
+  const askAi = async (message: string): Promise<ActionResult> => {
+    if (!authToken) {
+      return { ok: false, error: 'Вы не авторизованы' };
+    }
+
+    const normalized = message.trim();
+    if (!normalized) {
+      return { ok: false, error: 'Введите сообщение для AI' };
+    }
+
+    try {
+      const response = await api.aiChat(authToken, normalized, aiActiveSessionId ?? undefined);
+      setAiActiveSessionId(response.session.id);
+      setAiMessages(response.messages);
+      await loadAiSessions(authToken);
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Не удалось получить ответ AI'
+      };
+    }
+  };
+
   const value: AppContextValue = {
     users,
     currentUser,
@@ -355,6 +442,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     referralCodes,
     links,
     reminders,
+    aiSessions,
+    aiMessages,
+    aiActiveSessionId,
     isLoading,
     initError,
     login,
@@ -371,7 +461,10 @@ export function AppProvider({ children }: PropsWithChildren) {
     updateLesson,
     updateReferralCode,
     createReminder,
-    refreshReminders
+    refreshReminders,
+    askAi,
+    openAiSession,
+    refreshAiSessions
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

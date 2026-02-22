@@ -1,6 +1,16 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from './api';
-import { ChatMessage, Lesson, ReferralCode, Reminder, Role, User, WeekProgram } from './types';
+import {
+  AiMessage,
+  AiSession,
+  ChatMessage,
+  Lesson,
+  ReferralCode,
+  Reminder,
+  Role,
+  User,
+  WeekProgram
+} from './types';
 
 declare global {
   interface Window {
@@ -11,7 +21,7 @@ declare global {
   }
 }
 
-type Tab = 'home' | 'calendar' | 'chat' | 'tools' | 'profile';
+type Tab = 'home' | 'calendar' | 'chat' | 'ai' | 'tools' | 'profile';
 
 const TOKEN_KEY = 'mob_health_desktop_token';
 
@@ -50,6 +60,9 @@ export function App() {
   const [links, setLinks] = useState<Array<{ doctorId: string; patientId: string }>>([]);
   const [referralCodes, setReferralCodes] = useState<ReferralCode[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [aiSessions, setAiSessions] = useState<Array<AiSession & { lastMessage?: string }>>([]);
+  const [aiMessages, setAiMessages] = useState<AiMessage[]>([]);
+  const [aiActiveSessionId, setAiActiveSessionId] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -73,6 +86,8 @@ export function App() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [reminderStatus, setReminderStatus] = useState<string | null>(null);
   const [doctorStatus, setDoctorStatus] = useState<string | null>(null);
+  const [aiDraft, setAiDraft] = useState('');
+  const [aiStatus, setAiStatus] = useState<string | null>(null);
 
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
@@ -143,10 +158,29 @@ export function App() {
     }
   };
 
+  const loadAiSessions = async (authToken: string) => {
+    try {
+      const response = await api.aiSessions(authToken);
+      setAiSessions(response.sessions);
+
+      if (!aiActiveSessionId && response.sessions[0]?.id) {
+        const firstId = response.sessions[0].id;
+        const history = await api.aiSessionMessages(authToken, firstId);
+        setAiActiveSessionId(firstId);
+        setAiMessages(history.messages);
+      }
+    } catch {
+      setAiSessions([]);
+      setAiMessages([]);
+      setAiActiveSessionId(null);
+    }
+  };
+
   const refreshBootstrap = async (authToken: string) => {
     const data = await api.bootstrap(authToken);
     applyBootstrap(data);
     await loadReminders(authToken);
+    await loadAiSessions(authToken);
   };
 
   useEffect(() => {
@@ -280,6 +314,11 @@ export function App() {
     setLinks([]);
     setReferralCodes([]);
     setReminders([]);
+    setAiSessions([]);
+    setAiMessages([]);
+    setAiActiveSessionId(null);
+    setAiDraft('');
+    setAiStatus(null);
     setTab('home');
   };
 
@@ -351,6 +390,44 @@ export function App() {
       setReminderStatus('Напоминание создано');
     } catch (error) {
       setReminderStatus(error instanceof Error ? error.message : 'Не удалось создать напоминание');
+    }
+  };
+
+  const onOpenAiSession = async (sessionId: string) => {
+    if (!token) {
+      return;
+    }
+
+    try {
+      const response = await api.aiSessionMessages(token, sessionId);
+      setAiActiveSessionId(response.session.id);
+      setAiMessages(response.messages);
+      setAiStatus(null);
+    } catch (error) {
+      setAiStatus(error instanceof Error ? error.message : 'Failed to open AI session');
+    }
+  };
+
+  const onAskAi = async () => {
+    if (!token) {
+      return;
+    }
+
+    const normalized = aiDraft.trim();
+    if (!normalized) {
+      setAiStatus('Введите сообщение для AI');
+      return;
+    }
+
+    try {
+      const response = await api.aiChat(token, normalized, aiActiveSessionId ?? undefined);
+      setAiActiveSessionId(response.session.id);
+      setAiMessages(response.messages);
+      setAiDraft('');
+      setAiStatus(null);
+      await loadAiSessions(token);
+    } catch (error) {
+      setAiStatus(error instanceof Error ? error.message : 'AI request failed');
     }
   };
 
@@ -583,6 +660,7 @@ export function App() {
           <button className={tab === 'home' ? 'active' : ''} onClick={() => setTab('home')}>Главная</button>
           <button className={tab === 'calendar' ? 'active' : ''} onClick={() => setTab('calendar')}>Календарь</button>
           <button className={tab === 'chat' ? 'active' : ''} onClick={() => setTab('chat')}>Чат</button>
+          <button className={tab === 'ai' ? 'active' : ''} onClick={() => setTab('ai')}>AI</button>
           <button className={tab === 'tools' ? 'active' : ''} onClick={() => setTab('tools')}>Инструменты</button>
           <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>Профиль</button>
         </div>
@@ -691,6 +769,49 @@ export function App() {
               <p>Админ может только просматривать чат.</p>
             )}
             {chatError ? <div className="error">{chatError}</div> : null}
+          </div>
+        ) : null}
+
+        {tab === 'ai' ? (
+          <div className="panel">
+            <h3>AI Assistant</h3>
+            <p className="subtitle">Subagent is selected by role: patient/doctor/admin.</p>
+
+            <div className="card">
+              <h4>Request</h4>
+              <textarea
+                value={aiDraft}
+                onChange={(e) => setAiDraft(e.target.value)}
+                placeholder="Ask AI assistant"
+              />
+              <button onClick={onAskAi}>Send</button>
+              {aiStatus ? <div className="error">{aiStatus}</div> : null}
+            </div>
+
+            <div className="card">
+              <h4>Sessions</h4>
+              {aiSessions.length === 0 ? <p>No sessions yet.</p> : null}
+              {aiSessions.map((session) => (
+                <button
+                  key={session.id}
+                  className={session.id === aiActiveSessionId ? 'active' : 'ghost'}
+                  onClick={() => void onOpenAiSession(session.id)}
+                >
+                  {(session.title ?? 'AI Session')} [{session.subagent}]
+                </button>
+              ))}
+            </div>
+
+            <div className="card chat-box">
+              <h4>Conversation</h4>
+              {aiMessages.length === 0 ? <p>No messages yet.</p> : null}
+              {aiMessages.map((msg) => (
+                <div key={msg.id} className={`message ${msg.role === 'assistant' ? 'peer' : 'mine'}`}>
+                  <div>{msg.content}</div>
+                  <small>{new Date(msg.createdAt).toLocaleString()}</small>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
 

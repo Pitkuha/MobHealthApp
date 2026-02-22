@@ -1,298 +1,110 @@
 # MobHealth App (EN / RU)
 
 ## EN — Overview
-MobHealth is a medical multi-client application with three roles:
+MobHealth is a medical multi-role application with 3 roles:
 - Patient
 - Doctor
 - Admin
 
-Project parts:
-- Mobile client (Expo React Native) — iOS/Android
-- Desktop client (Electron + React) — macOS/Windows/Linux
-- Backend API (Express + Prisma + PostgreSQL)
+Current architecture:
+- Client (single codebase): Expo React Native (iOS/Android/Web)
+- Desktop mode: React Native Web (via Expo Web)
+- Backend: Java Spring Boot + PostgreSQL
 
-## RU — Описание
-MobHealth — медицинское мультиклиентское приложение с тремя ролями:
-- Пациент
-- Врач
-- Администратор
-
-Части проекта:
-- Мобильный клиент (Expo React Native) — iOS/Android
-- Desktop клиент (Electron + React) — macOS/Windows/Linux
-- Backend API (Express + Prisma + PostgreSQL)
-
----
+Legacy modules kept in repo:
+- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server` (Node.js backend, legacy)
+- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/desktop` (Electron client, legacy)
 
 ## EN — Features
-- Role-based authentication: `patient / doctor / admin`
-- Weekly lesson programs (autogenic training)
-- Audio lessons
-- Lessons calendar
-- Profile area
+- Role-based auth (`patient / doctor / admin`)
+- Weekly lesson programs with audio
+- Calendar with lessons
+- Profile
 - Patient ↔ doctor chat
 - Doctor referral codes
-- Patient registration via referral code
-- Admin panel: users, lessons, referral codes management
-- Lesson reminders (backend reminders + mobile notifications)
-- AI Agent with role-based subagents (`patient-coach`, `doctor-assistant`, `admin-assistant`)
-
-## RU — Возможности
-- Ролевой вход: `patient / doctor / admin`
-- Программы по неделям с уроками (аутогенные тренировки)
-- Аудио-уроки
-- Календарь уроков
-- Личный кабинет
-- Чат пациент ↔ врач
-- Реферальные коды врача
-- Регистрация пациента по коду врача
-- Админ-панель: редактирование пользователей, уроков, рефкодов
-- Напоминания по урокам (backend reminders + mobile notifications)
-- AI Agent с role-based subagent (`patient-coach`, `doctor-assistant`, `admin-assistant`)
-
----
+- Patient registration by referral code
+- Admin data management
+- Lesson reminders
+- AI assistant sessions (role-based)
 
 ## EN — Tech Stack
-- Mobile: Expo, React Native, TypeScript
-- Desktop: Electron, React, Vite, TypeScript
-- Backend: Node.js, Express, Prisma
-- Database: PostgreSQL
-
-## RU — Стек
-- Mobile: Expo, React Native, TypeScript
-- Desktop: Electron, React, Vite, TypeScript
-- Backend: Node.js, Express, Prisma
-- Database: PostgreSQL
-
----
-
-## EN — Project Structure
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/src` — mobile
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/desktop` — desktop
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server` — backend
-
-## RU — Структура проекта
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/src` — mobile
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/desktop` — desktop
-- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server` — backend
-
----
+- Client: Expo, React Native, TypeScript
+- Backend: Java 21+, Spring Boot 3, JDBC, Flyway, JWT
+- Database: PostgreSQL 16+
 
 ## EN — Requirements
-- Node.js 20.x (LTS recommended)
+- Node.js 20+
 - npm 10+
+- Java 21+ (you have Java 25, it is OK)
+- Maven 3.9+
 - PostgreSQL 16+
 - Xcode (for iOS simulator)
 
-## RU — Требования
-- Node.js 20.x (рекомендуется LTS)
-- npm 10+
-- PostgreSQL 16+
-- Xcode (для iOS симулятора)
-
----
-
-## EN — PostgreSQL Setup (macOS/Homebrew)
-```bash
-brew install postgresql@16
-brew services start postgresql@16
-```
-
-## RU — Установка PostgreSQL (macOS/Homebrew)
-```bash
-brew install postgresql@16
-brew services start postgresql@16
-```
-
----
-
-## EN — Start From Correct Directory (Important)
-If you run commands from `~` (for example `/Users/pitkuha`) you will get:
-- `npm ERR! enoent Could not read package.json`
-- `cd: no such file or directory: server`
-
-Always start with:
+## EN — Start From Correct Directory
 ```bash
 cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
 pwd
 ls package.json
 ```
 
-`ls package.json` must print `package.json`.
-
-## RU — Запуск из правильной директории (Важно)
-Если запускать команды из `~` (например `/Users/pitkuha`), появятся ошибки:
-- `npm ERR! enoent Could not read package.json`
-- `cd: no such file or directory: server`
-
-Всегда начинайте с:
+## EN — First Run
+### 1) Install dependencies
 ```bash
 cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-pwd
-ls package.json
-```
-
-Команда `ls package.json` должна вывести `package.json`.
-
----
-
-## EN — First Full Run
-
-### 1) Backend
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server
-cp .env.example .env
 npm install
-npm run prisma:generate
-npx prisma migrate deploy
-npm run prisma:seed
-npm run dev
 ```
 
-### 2) Mobile
+### 2) Start PostgreSQL
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+### 3) Start Java backend
 ```bash
 cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-cp .env.example .env
-npm install
+npm run server:dev
+```
+
+Notes:
+- Backend runs on `http://localhost:4000`.
+- Flyway migrations run automatically.
+- Demo data is seeded automatically if DB is empty.
+
+### 4) Start mobile client (iOS/Android)
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
 npm run start:localhost
 ```
-
-Press `i` for iOS, `a` for Android.
-If LAN/localhost fails, use:
+- Press `i` for iOS simulator
+- Press `a` for Android emulator
+- If local network mode fails, run:
 ```bash
 npm run start:tunnel
 ```
 
-### 3) Desktop
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run desktop:install
-cd desktop
-cp .env.example .env
-cd ..
-npm run desktop:dev
-```
-
-## RU — Первый запуск (полностью)
-
-### 1) Backend
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server
-cp .env.example .env
-npm install
-npm run prisma:generate
-npx prisma migrate deploy
-npm run prisma:seed
-npm run dev
-```
-
-### 2) Mobile
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-cp .env.example .env
-npm install
-npm run start:localhost
-```
-
-Для iOS нажмите `i`, для Android нажмите `a`.
-Если LAN/localhost не работает, используйте:
-```bash
-npm run start:tunnel
-```
-
-### 3) Desktop
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run desktop:install
-cd desktop
-cp .env.example .env
-cd ..
-npm run desktop:dev
-```
-
----
-
-## EN — Daily Run
-- Terminal 1 (backend):
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server
-npm run dev
-```
-- Terminal 2 (mobile):
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run start:localhost
-```
-- Terminal 3 (desktop):
+### 5) Start desktop client (React Native Web)
 ```bash
 cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
 npm run desktop:dev
 ```
-
-## RU — Ежедневный запуск
-- Терминал 1 (backend):
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server
-npm run dev
-```
-- Терминал 2 (mobile):
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run start:localhost
-```
-- Терминал 3 (desktop):
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run desktop:dev
-```
-
----
 
 ## EN — Environment Variables
-
-### Root `.env` (mobile)
+### Root `.env` (client)
 ```env
 EXPO_PUBLIC_API_URL=http://localhost:4000/api
 ```
 
-### `server/.env`
+### Optional backend env vars
 ```env
 PORT=4000
 DATABASE_URL=postgresql://pitkuha@localhost:5432/mob_health?schema=public
+DB_USER=pitkuha
+DB_PASSWORD=
 JWT_SECRET=change_this_secret
 JWT_EXPIRES_IN=7d
-CORS_ORIGIN=http://localhost:8081,http://localhost:5173
-EXPO_ACCESS_TOKEN=
+CORS_ORIGIN=http://localhost:8081,http://localhost:5173,http://localhost:19006
 ```
-
-### `desktop/.env`
-```env
-VITE_API_URL=http://localhost:4000/api
-```
-
-## RU — Переменные окружения
-
-### Root `.env` (mobile)
-```env
-EXPO_PUBLIC_API_URL=http://localhost:4000/api
-```
-
-### `server/.env`
-```env
-PORT=4000
-DATABASE_URL=postgresql://pitkuha@localhost:5432/mob_health?schema=public
-JWT_SECRET=change_this_secret
-JWT_EXPIRES_IN=7d
-CORS_ORIGIN=http://localhost:8081,http://localhost:5173
-EXPO_ACCESS_TOKEN=
-```
-
-### `desktop/.env`
-```env
-VITE_API_URL=http://localhost:4000/api
-```
-
----
 
 ## EN — Demo Accounts
 - Patient: `anna@example.com / patient123`
@@ -300,123 +112,218 @@ VITE_API_URL=http://localhost:4000/api
 - Admin: `admin@mobhealth.app / admin123`
 - Referral code: `DRORLOVA10`
 
-## RU — Демо-аккаунты
-- Пациент: `anna@example.com / patient123`
-- Врач: `e.orlova@clinic.com / doctor123`
-- Админ: `admin@mobhealth.app / admin123`
-- Реферальный код: `DRORLOVA10`
-
----
-
 ## EN — Verification
-- API health check:
 ```bash
 curl http://localhost:4000/api/health
-```
-- Typecheck:
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
 npm run typecheck
-npm run server:typecheck
-npm run desktop:typecheck
-```
-- Backend tests:
-```bash
+npm run server:build
 npm run server:test
 ```
-
-## RU — Проверка работоспособности
-- Проверка API:
-```bash
-curl http://localhost:4000/api/health
-```
-- Typecheck:
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-npm run typecheck
-npm run server:typecheck
-npm run desktop:typecheck
-```
-- Тесты backend:
-```bash
-npm run server:test
-```
-
----
 
 ## EN — Main Scripts
 ```bash
-# mobile
+# client
 npm run start
 npm run start:localhost
 npm run start:tunnel
+npm run web
+npm run desktop:dev
+npm run desktop:build
 
-# backend
+# java backend
 npm run server:dev
-npm run server:typecheck
+npm run server:build
 npm run server:test
 
-# desktop
-npm run desktop:install
-npm run desktop:dev
-npm run desktop:typecheck
-npm run desktop:build
+# legacy (optional)
+npm run server:legacy:dev
+npm run server:legacy:typecheck
+npm run server:legacy:test
+npm run desktop:legacy:dev
 ```
-
-## RU — Основные скрипты
-```bash
-# mobile
-npm run start
-npm run start:localhost
-npm run start:tunnel
-
-# backend
-npm run server:dev
-npm run server:typecheck
-npm run server:test
-
-# desktop
-npm run desktop:install
-npm run desktop:dev
-npm run desktop:typecheck
-npm run desktop:build
-```
-
----
 
 ## EN — Common Issues
-1. `Failed to fetch` on login:
-- backend is not running
-- wrong API URL
-- CORS blocks origin
-
-2. `simctl openurl ... timed out`:
-- use `npm run start:tunnel`
-- verify Xcode tools:
-```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-sudo xcodebuild -license accept
-open -a Simulator
-```
-
-3. Expo SDK package version warning:
-- run `npm install` in project root
-
-4. `npm ERR! enoent ... /Users/pitkuha/package.json`:
-- you are in the wrong directory
+1. `npm ERR! enoent ... /Users/pitkuha/package.json`
+- you are not in project folder
 - run:
 ```bash
 cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
 ls package.json
 ```
 
-## RU — Частые проблемы
-1. `Failed to fetch` при логине:
-- backend не запущен
-- неверный API URL
-- CORS блокирует origin
+2. `Failed to fetch` on login
+- backend is not running
+- wrong `EXPO_PUBLIC_API_URL`
+- CORS origin is not allowed
 
-2. `simctl openurl ... timed out`:
+3. `simctl ... timed out`
+- use tunnel mode: `npm run start:tunnel`
+- check Xcode tools:
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept
+open -a Simulator
+```
+
+---
+
+## RU — Описание
+MobHealth — медицинское приложение с 3 ролями:
+- Пациент
+- Врач
+- Администратор
+
+Текущая архитектура:
+- Клиент (единый код): Expo React Native (iOS/Android/Web)
+- Desktop-режим: React Native Web (через Expo Web)
+- Backend: Java Spring Boot + PostgreSQL
+
+Legacy-модули сохранены:
+- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/server` (Node.js backend, legacy)
+- `/Users/pitkuha/Desktop/CodexProjects/MobHealthApp/desktop` (Electron client, legacy)
+
+## RU — Возможности
+- Ролевой вход (`patient / doctor / admin`)
+- Недельные программы с аудио-уроками
+- Календарь уроков
+- Личный кабинет
+- Чат пациент ↔ врач
+- Реферальные коды врача
+- Регистрация пациента по реферальному коду
+- Управление данными админом
+- Напоминания по урокам
+- AI-сессии по ролям
+
+## RU — Стек
+- Клиент: Expo, React Native, TypeScript
+- Backend: Java 21+, Spring Boot 3, JDBC, Flyway, JWT
+- База: PostgreSQL 16+
+
+## RU — Требования
+- Node.js 20+
+- npm 10+
+- Java 21+ (у вас Java 25, подходит)
+- Maven 3.9+
+- PostgreSQL 16+
+- Xcode (для iOS-симулятора)
+
+## RU — Запуск из правильной папки
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+pwd
+ls package.json
+```
+
+## RU — Первый запуск
+### 1) Установить зависимости
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+npm install
+```
+
+### 2) Запустить PostgreSQL
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+### 3) Запустить Java backend
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+npm run server:dev
+```
+
+Примечания:
+- Backend слушает `http://localhost:4000`.
+- Flyway миграции применяются автоматически.
+- Демо-данные заполняются автоматически, если база пустая.
+
+### 4) Запустить mobile клиент (iOS/Android)
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+npm run start:localhost
+```
+- Нажмите `i` для iOS
+- Нажмите `a` для Android
+- Если LAN/localhost не работает:
+```bash
+npm run start:tunnel
+```
+
+### 5) Запустить desktop клиент (React Native Web)
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+npm run desktop:dev
+```
+
+## RU — Переменные окружения
+### Root `.env` (client)
+```env
+EXPO_PUBLIC_API_URL=http://localhost:4000/api
+```
+
+### Опциональные backend env vars
+```env
+PORT=4000
+DATABASE_URL=postgresql://pitkuha@localhost:5432/mob_health?schema=public
+DB_USER=pitkuha
+DB_PASSWORD=
+JWT_SECRET=change_this_secret
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=http://localhost:8081,http://localhost:5173,http://localhost:19006
+```
+
+## RU — Демо-аккаунты
+- Пациент: `anna@example.com / patient123`
+- Врач: `e.orlova@clinic.com / doctor123`
+- Админ: `admin@mobhealth.app / admin123`
+- Реферальный код: `DRORLOVA10`
+
+## RU — Проверка
+```bash
+curl http://localhost:4000/api/health
+npm run typecheck
+npm run server:build
+npm run server:test
+```
+
+## RU — Основные скрипты
+```bash
+# client
+npm run start
+npm run start:localhost
+npm run start:tunnel
+npm run web
+npm run desktop:dev
+npm run desktop:build
+
+# java backend
+npm run server:dev
+npm run server:build
+npm run server:test
+
+# legacy (опционально)
+npm run server:legacy:dev
+npm run server:legacy:typecheck
+npm run server:legacy:test
+npm run desktop:legacy:dev
+```
+
+## RU — Частые проблемы
+1. `npm ERR! enoent ... /Users/pitkuha/package.json`
+- вы не в папке проекта
+- выполните:
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+ls package.json
+```
+
+2. `Failed to fetch` при логине
+- backend не запущен
+- неверный `EXPO_PUBLIC_API_URL`
+- CORS не разрешает origin
+
+3. `simctl ... timed out`
 - используйте `npm run start:tunnel`
 - проверьте Xcode tools:
 ```bash
@@ -424,22 +331,3 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 sudo xcodebuild -license accept
 open -a Simulator
 ```
-
-3. Expo SDK warning о версиях пакетов:
-- выполните `npm install` в root
-
-4. `npm ERR! enoent ... /Users/pitkuha/package.json`:
-- вы находитесь не в директории проекта
-- выполните:
-```bash
-cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
-ls package.json
-```
-
----
-
-## EN — Note
-This repository is configured for local development/testing. Production setup should include HTTPS, secret management, strict CORS policy, token rotation, observability, and CI/CD.
-
-## RU — Примечание
-Это development-конфигурация для локальной проверки. Для production нужны HTTPS, секреты, ограничение CORS, ротация токенов, мониторинг и CI/CD.

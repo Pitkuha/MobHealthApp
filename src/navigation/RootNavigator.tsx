@@ -5,6 +5,7 @@ import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native'
 import { useAppData } from '../context/AppContext';
 import { theme } from '../theme';
 import { AdminScreen } from '../screens/AdminScreen';
+import { AIScreen } from '../screens/AIScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { ChatScreen } from '../screens/ChatScreen';
@@ -73,6 +74,14 @@ export function RootNavigator() {
           options={{
             title: 'Календарь',
             tabBarIcon: () => <IconLabel label="Дни" />
+          }}
+        />
+        <Tab.Screen
+          name="ai"
+          component={AIScreen}
+          options={{
+            title: 'AI',
+            tabBarIcon: () => <IconLabel label="AI" />
           }}
         />
         <Tab.Screen
