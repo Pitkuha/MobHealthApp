@@ -3,6 +3,7 @@ desktop/node_modules
 desktop/dist
 server/node_modules
 backend-java/target
+.DS_Store
 .expo
 .env
 desktop/.env
