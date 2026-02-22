@@ -35,6 +35,7 @@ MobHealth — медицинское мультиклиентское прило
 - Patient registration via referral code
 - Admin panel: users, lessons, referral codes management
 - Lesson reminders (backend reminders + mobile notifications)
+- AI Agent with role-based subagents (`patient-coach`, `doctor-assistant`, `admin-assistant`)
 
 ## RU — Возможности
 - Ролевой вход: `patient / doctor / admin`
@@ -47,6 +48,7 @@ MobHealth — медицинское мультиклиентское прило
 - Регистрация пациента по коду врача
 - Админ-панель: редактирование пользователей, уроков, рефкодов
 - Напоминания по урокам (backend reminders + mobile notifications)
+- AI Agent с role-based subagent (`patient-coach`, `doctor-assistant`, `admin-assistant`)
 
 ---
 
@@ -101,6 +103,36 @@ brew services start postgresql@16
 brew install postgresql@16
 brew services start postgresql@16
 ```
+
+---
+
+## EN — Start From Correct Directory (Important)
+If you run commands from `~` (for example `/Users/pitkuha`) you will get:
+- `npm ERR! enoent Could not read package.json`
+- `cd: no such file or directory: server`
+
+Always start with:
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+pwd
+ls package.json
+```
+
+`ls package.json` must print `package.json`.
+
+## RU — Запуск из правильной директории (Важно)
+Если запускать команды из `~` (например `/Users/pitkuha`), появятся ошибки:
+- `npm ERR! enoent Could not read package.json`
+- `cd: no such file or directory: server`
+
+Всегда начинайте с:
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+pwd
+ls package.json
+```
+
+Команда `ls package.json` должна вывести `package.json`.
 
 ---
 
@@ -370,6 +402,14 @@ open -a Simulator
 3. Expo SDK package version warning:
 - run `npm install` in project root
 
+4. `npm ERR! enoent ... /Users/pitkuha/package.json`:
+- you are in the wrong directory
+- run:
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+ls package.json
+```
+
 ## RU — Частые проблемы
 1. `Failed to fetch` при логине:
 - backend не запущен
@@ -387,6 +427,14 @@ open -a Simulator
 
 3. Expo SDK warning о версиях пакетов:
 - выполните `npm install` в root
+
+4. `npm ERR! enoent ... /Users/pitkuha/package.json`:
+- вы находитесь не в директории проекта
+- выполните:
+```bash
+cd /Users/pitkuha/Desktop/CodexProjects/MobHealthApp
+ls package.json
+```
 
 ---
 
